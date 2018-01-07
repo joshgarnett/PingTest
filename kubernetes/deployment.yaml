@@ -1,0 +1,22 @@
+apiVersion: apps/v1beta1
+kind: Deployment
+metadata:
+  name: pingtest-deployment
+spec:
+  replicas: 1
+  revisionHistoryLimit: 5
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: pingtest
+    spec:
+      containers:
+      - name: pingtest
+        image: joshdev/pingtest:manual6
+        args: ["PingServer.exe"]
+        ports:
+        - containerPort: 5000
+          name: server-tcp
+          protocol: TCP

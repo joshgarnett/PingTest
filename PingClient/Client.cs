@@ -14,8 +14,8 @@ using PingCommon.Protocol;
 namespace PingClient {
 	internal class Client {
 		private const int Port = 5000;
-		private const int ConnectionTimeoutMs = 10000;
-		private const int SendTimeoutMs = 10000;
+		private const int ConnectionTimeoutMs = 5000;
+		private const int SendTimeoutMs = 5000;
 		private static readonly Logger _log = LogManager.GetCurrentClassLogger(typeof(Client));
 
 		public async Task StartClient(string host, int port) {
@@ -73,8 +73,6 @@ namespace PingClient {
 					_log.Error("Channel is closed");
 					break;
 				}
-
-				await Task.Delay(1000);
 			}
 
 			await bootstrapChannel.CloseAsync();
@@ -89,8 +87,6 @@ namespace PingClient {
 				catch (Exception ex) {
 					_log.Error("Exception in client: {0}", ex.Message);
 				}
-				// wait a few seconds before creating another client
-				Thread.Sleep(2000);
 			}
 		}
 	}

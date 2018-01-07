@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: pingtest
+  annotations:
+    service.beta.kubernetes.io/aws-load-balancer-cross-zone-load-balancing-enabled: "true"
+spec:
+  ports:
+  - name: server-tcp
+    port: 5000
+    targetPort: 5000
+    protocol: TCP
+  selector:
+    app: pingtest
+  type: LoadBalancer

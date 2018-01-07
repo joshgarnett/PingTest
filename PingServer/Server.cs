@@ -20,6 +20,9 @@ namespace PingServer {
 
 		public async Task StartServer(int port) {
 			InternalLoggerFactory.DefaultFactory.AddProvider(new NLogLoggerProvider());
+			
+			_log.Info("Waiting 15s before starting the server");
+			await Task.Delay(15000);
 
 			var bossGroup = new MultithreadEventLoopGroup(1);
 			var workerGroup = new MultithreadEventLoopGroup();

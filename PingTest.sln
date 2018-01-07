@@ -9,6 +9,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PingServer", "PingServer\Pi
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PingCommon", "PingCommon\PingCommon.csproj", "{BCE0B677-9FC6-48FB-A386-0D463F4738DF}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PingClientSocket", "PingClientSocket\PingClientSocket.csproj", "{F6CA914C-216F-49A9-A321-B95AF93A68B1}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -27,6 +29,10 @@ Global
 		{BCE0B677-9FC6-48FB-A386-0D463F4738DF}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{BCE0B677-9FC6-48FB-A386-0D463F4738DF}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{BCE0B677-9FC6-48FB-A386-0D463F4738DF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F6CA914C-216F-49A9-A321-B95AF93A68B1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F6CA914C-216F-49A9-A321-B95AF93A68B1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F6CA914C-216F-49A9-A321-B95AF93A68B1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F6CA914C-216F-49A9-A321-B95AF93A68B1}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

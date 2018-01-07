@@ -28,6 +28,9 @@ namespace PingClient {
 
 		public override void ChannelInactive(IChannelHandlerContext context) {
 			_log.Debug("Client Disconnected");
+			if (_promise != null) {
+				_promise.TrySetResult(false);
+			}
 			_connected = false;
 		}
 
