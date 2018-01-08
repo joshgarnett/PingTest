@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Threading;
 using System.Threading.Tasks;
 using DotNetty.Codecs.Protobuf;
 using DotNetty.Common.Internal.Logging;
@@ -16,14 +15,52 @@ namespace PingClient {
 		private const int Port = 5000;
 		private const int ConnectionTimeoutMs = 5000;
 		private const int SendTimeoutMs = 5000;
-		private static readonly Logger _log = LogManager.GetCurrentClassLogger(typeof(Client));
+		private static readonly Logger Log = LogManager.GetCurrentClassLogger(typeof(Client));
 
-		public async Task StartClient(string host, int port) {
-			InternalLoggerFactory.DefaultFactory.AddProvider(new NLogLoggerProvider());
+		private static async Task StartClient(Bootstrap bootstrap, string host, int port) {
+			Log.Info("Connecting to {0}:{1}", host, port);
+			IChannel bootstrapChannel = await bootstrap.ConnectAsync(host, port);
+			var handler = (ClientHandler) bootstrapChannel.Pipeline.Last();
 
+			var connectionTask = handler.ConnectionTask;
+			if (await Task.WhenAny(connectionTask, Task.Delay(ConnectionTimeoutMs)) != connectionTask) {
+				Log.Error("Failed to connect to {0}", host);
+				return;
+			}
+
+			for (;;) {
+				if (handler.IsConnected) {
+					var task = handler.SendMessage();
+					if (await Task.WhenAny(task, Task.Delay(SendTimeoutMs)) == task) {
+						if (task.IsFaulted) {
+							Log.Error(task.Exception, "Exception sending message");
+							break;
+						}
+						if (task.Result) {
+							Log.Info("Received Pong");
+						}
+						else {
+							Log.Info("Ping failed");
+							break;
+						}
+					}
+					else {
+						Log.Error("Pong not received within {0}ms", SendTimeoutMs);
+						break;
+					}
+				}
+				else {
+					Log.Error("Channel is closed");
+					break;
+				}
+			}
+
+			await bootstrapChannel.CloseAsync();
+		}
+
+		public static void Main(string[] args) {
 			var group = new MultithreadEventLoopGroup();
-
-			var handler = new ClientHandler();
+			InternalLoggerFactory.DefaultFactory.AddProvider(new NLogLoggerProvider());
 
 			var bootstrap = new Bootstrap();
 			bootstrap
@@ -36,58 +73,19 @@ namespace PingClient {
 					pipeline.AddLast(new ProtobufDecoder(Envelope.Parser));
 					pipeline.AddLast(new ProtobufVarint32LengthFieldPrepender());
 					pipeline.AddLast(new ProtobufEncoder());
-					pipeline.AddLast(handler);
+					pipeline.AddLast(new ClientHandler());
 				}));
 
-			_log.Info("Connecting to {0}:{1}", host, port);
-			IChannel bootstrapChannel = await bootstrap.ConnectAsync(host, port);
 
-			var connectionTask = handler.ConnectionTask;
-			if (await Task.WhenAny(connectionTask, Task.Delay(ConnectionTimeoutMs)) != connectionTask) {
-				_log.Error("Failed to connect to {0}", host);
-				return;
-			}
-
-			for (;;) {
-				if (handler.IsConnected) {
-					var task = handler.SendMessage();
-					if (await Task.WhenAny(task, Task.Delay(SendTimeoutMs)) == task) {
-						if (task.IsFaulted) {
-							_log.Error(task.Exception, "Exception sending message");
-							break;
-						}
-						if (task.Result) {
-							_log.Info("Pong received");
-						}
-						else {
-							_log.Info("Ping failed");
-							break;
-						}
-					}
-					else {
-						_log.Error("Pong not received within {0}ms", SendTimeoutMs);
-						break;
-					}
-				}
-				else {
-					_log.Error("Channel is closed");
-					break;
-				}
-			}
-
-			await bootstrapChannel.CloseAsync();
-		}
-
-		public static void Main(string[] args) {
 			for (;;) {
 				try {
-					var client = new Client();
-					client.StartClient(args[0], Port).Wait();
+					StartClient(bootstrap, args[0], Port).Wait();
 				}
 				catch (Exception ex) {
-					_log.Error("Exception in client: {0}", ex.Message);
+					Log.Error("Exception in client: {0}", ex.Message);
 				}
 			}
+			// ReSharper disable once FunctionNeverReturns
 		}
 	}
 }

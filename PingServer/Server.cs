@@ -14,14 +14,14 @@ using PingCommon.Protocol;
 namespace PingServer {
 	internal class Server {
 		private const int Port = 5000;
-		private static readonly Logger _log = LogManager.GetCurrentClassLogger(typeof(Server));
+		private static readonly Logger Log = LogManager.GetCurrentClassLogger(typeof(Server));
 		
 		private IChannel _channel;
 
-		public async Task StartServer(int port) {
+		private async Task StartServer(int port) {
 			InternalLoggerFactory.DefaultFactory.AddProvider(new NLogLoggerProvider());
 			
-			_log.Info("Waiting 15s before starting the server");
+			Log.Info("Waiting 15s before starting the server");
 			await Task.Delay(15000);
 
 			var bossGroup = new MultithreadEventLoopGroup(1);
@@ -45,12 +45,12 @@ namespace PingServer {
 			_channel = await bootstrap.BindAsync(port);
 		}
 
-		public void Stop() {
+		private void Stop() {
 			_channel?.CloseAsync();
 		}
 		
-		public static void Main(string[] args) {
-			_log.Info("Starting server on port {0}", Port);
+		public static void Main() {
+			Log.Info("Starting server on port {0}", Port);
 			
 			var server = new Server();
 			server.StartServer(Port).Wait();
@@ -59,7 +59,7 @@ namespace PingServer {
 			UnixSignal.WaitAny(GetUnixTerminationSignals());
 			server.Stop();
 
-			_log.Info("Shutting down server");
+			Log.Info("Shutting down server");
 		}
 		
 		private static UnixSignal[] GetUnixTerminationSignals() {

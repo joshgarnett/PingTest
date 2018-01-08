@@ -4,25 +4,24 @@ using PingCommon.Protocol;
 
 namespace PingServer {
 	public class ServerHandler : ChannelHandlerAdapter {
-		private static readonly NLog.Logger _log = NLog.LogManager.GetCurrentClassLogger(typeof(ServerHandler));
+		private static readonly NLog.Logger Log = NLog.LogManager.GetCurrentClassLogger(typeof(ServerHandler));
 		
 		public override void ChannelActive(IChannelHandlerContext context) {
-			_log.Info("Client connected");
+			Log.Info("Client connected");
 		}
 
 		public override void ChannelRead(IChannelHandlerContext context, object message) {
-			var envelope = message as Envelope;
-			if (envelope == null) {
-				_log.Error("Envelope is null");
+			if (!(message is Envelope envelope)) {
+				Log.Error("Envelope is null");
 				return;
 			}
 
 			if (envelope.Ping == null) {
-				_log.Error("Ping is null");
+				Log.Error("Ping is null");
 				return;
 			}
 			
-			_log.Info("Received ping: {0}", envelope.Ping.Data);
+			Log.Info("Received ping: {0}", envelope.Ping.Data);
 			
 			var response = new Envelope {
 				Pong = new Pong { Data = envelope.Ping.Data }
@@ -32,11 +31,11 @@ namespace PingServer {
 		}
 
 		public override void ChannelInactive(IChannelHandlerContext context) {
-			_log.Debug("Client Disconnected");
+			Log.Debug("Client Disconnected");
 		}
 
 		public override void ExceptionCaught(IChannelHandlerContext context, Exception exception) {
-			_log.Error(exception, "There was an exception in the handler");
+			Log.Error(exception, "There was an exception in the handler");
 			context.CloseAsync();
 		}
 	}
